@@ -1,0 +1,454 @@
+                   
+				PEGASE
+
+	 "Projet d'Etude des GAlaxies par Synthese Evolutive"
+                                               
+	     by Michel Fioc and Brigitte Rocca-Volmerange
+		  Institut d'Astrophysique de Paris
+		 98 bis Bd Arago, 75014 Paris, France
+
+			e-mail : pegase@iap.fr
+	 anonymous ftp : ftp.iap.fr in pub/from_users/pegase
+
+				*	 *
+
+
+
+				*	 *
+				
+The  purpose  of  PEGASE is the study of  galaxies  by evolutionary synthesis.
+
+We  propose  in  FRV_MODELE/  the  codes  and  input  data of our model PEGASE 
+(version may 1996) which will permit the user to build  synthetic  spectra  of 
+galaxies from the far UV (220 A) to the  NIR  (10 microns)  on  timescales  as 
+short as 10**6 years or as long as the age of the  Universe  for  the  initial 
+mass function  and  the  star  formation  rate  he  wants.  Nebular  emission, 
+extinction and mass rejection are in option. We also provide a code to compute
+colors for these spectra.
+
+Our  library of stellar  spectra is  published with the model and should prove
+useful for other  studies  (see section 2).  The possibility to use the Jacoby
+library is also made avalaible.
+
+In  RVF_ATLAS/, we present the results of the model PEGASE (version may 1996):
+synthetic  spectra (nebular and stellar continua plus  emission  lines)  for a 
+long duration (1 Gyr)  starburst  and for  8 spectral  types  of  galaxies  in 
+agreement with  galaxies of the Hubble  sequence.  The colors,  various output
+data (M/L,  equivalent  widths,  gas  content  and  others)  and the k- and e-
+corrections in various photometric systems (Johnson-Cousins UBVRIJHKLM,  WFC2/
+HST and FOCA2000) are given.
+
+Details about the model and the atlas are given in the reference papers:  Fioc
+and  Rocca-Volmerange,  1996,  Rocca-Volmerange  and Fioc, in  preparation.  A
+shorten version is given in our contribution in Leitherer et al,1996.
+
+We project to extend our model to the  far-infrared (up to 200 microns) and to
+include  evolutionary  tracks and stellar spectra for non solar metallicity as
+well as a better treatment of extinction and nebular emission.
+
+Further improvements will be avalaible by anonymous account:
+> ftp ftp.iap.fr
+  Name (ftp.iap.fr:name): anonymous
+  Password: your e-mail
+> cd pub/from_users/pegase
+> get ... (the files you are interested in)
+> quit
+
+In order to be informed of the  developments of PEGASE as soon as they will be
+avalaible by ftp, to require some specific computations, to ask  questions  or
+to make comments or suggestions, mail us at
+
+				pegase@iap.fr
+
+
+
+
+
+II. RVF_ATLAS/ (Rocca-Volmerange and Fioc, 1996, to be submitted)
+#################################################################
+
+Section  1  presents  the list of files of the  atlas,  corresponding  to time
+evolution of synthetic  spectra, colors and other quantities for each spectral
+type of  galaxies.  A 1Gyr  duration  starburst  is given  here while  shorter
+bursts  (down  to  1 Myr  duration)  can  be  computed  by  using  FRV_MODELE/
+or required  to  authors  by pegase@iap.fr.  To  be  compatible  with  various 
+cosmologies,  two  different  ages  of  early  type  galaxy  models at z=0 are
+considered.  The  identification  of spectral types is done through visible to
+near-IR colors and visible spectral energy  distributions of galaxy  templates
+for the Hubble sequence.  Typical  parameters used for the sequence of spectra
+and the  contents  of the  spectrum  files are given in section 2.  Colors and
+various output data corresponding to each spectrum of galaxy are in section 3.
+The k-  and  e-  corrections,  computed  from  these  spectra  in 3  different
+cosmologies  are  given in  section 4 for the same  photometric  systems  than
+colors.
+
+
+1. List of files
+________________
+
+ Spectral galaxy types   Synthetic spectra     Colors and other quantities
+ 
+ Starburst (1Gyr long)	 RVF_spec1G.res        RVF_coul1G.res
+ Elliptical (13Gyr (#1)) RVF_specE13.res       RVF_coulE13.res 
+ Elliptical (16Gyr (#1)) RVF_specE16.res       RVF_coulE16.res
+     S0	    (13Gyr (#1)) RVF_specS013.res      RVF_coulS013.res 
+     S0	    (16Gyr (#1)) RVF_specS016.res      RVF_coulS016.res
+     Sa	    (13Gyr (#1)) RVF_specSa13.res      RVF_coulSa13.res
+     Sa	    (15Gyr (#1)) RVF_specSa15.res      RVF_coulSa15.res 
+     Sb	 	         RVF_specSb.res        RVF_coulSb.res
+     Sbc	         RVF_specSbc.res       RVF_coulSbc.res
+     Sc	                 RVF_specSc.res        RVF_coulSc.res
+     Sd 	         RVF_specSd.res        RVF_coulSd.res
+     Im                  RVF_specIm.res        RVF_coulIm.res 
+
+(#1) old at z=0.
+	
+ 
+ k- and (k+e)-corrections for three cosmologies (see 4.1, 4.2, 4.3 below):
+
+ Starburst (1Gyr) RVF_ke1G_1.res   RVF_ke1G_2.res  RVF_ke1G_3.res
+ Elliptical	  RVF_keE_1.res    RVF_keE_2.res   RVF_keE_3.res 
+ S0               RVF_keS0_1.res   RVF_keS0_2.res  RVF_keS0_3.res
+ Sa	          RVF_keSa_1.res   RVF_keSa_2.res  RVF_keSa_3.res 
+ Sb               RVF_keSb_1.res   RVF_keSb_2.res  RVF_keSb_3.res
+ Sbc              RVF_keSbc_1.res  RVF_keSbc_2.res RVF_keSbc_3.res
+ Sc               RVF_keSc_1.res   RVF_keSc_2.res  RVF_keSc_3.res
+ Sd               RVF_keSd_1.res   RVF_keSd_2.res  RVF_keSd_3.res
+ Im               RVF_keIm_1.res   RVF_keIm_2.res  RVF_keIm_3.res
+
+
+
+2. Synthetic spectra
+____________________
+
+The  star  formation  parameters  as  well as the  specifications  on  ejecta,
+extinction  and nebular  emission  (continuum and lines) are precised for each
+scenario  of  evolution.  Fits with observations define "synthetic  templates"
+at z=0 for each Hubble galaxy  type which reproduce nearby  galaxy  colors  on 
+the  largest  basis  avalaible  (U-V/V-K) (Aaronson, 1978) and  visible obser-
+vational templates (Kennicutt, 1992).  Agreement  in other  colors  (U-B, B-V, 
+B-H, J-H, H-K, V-R and V-I) is good. E/S0 galaxies  are best  fitted at  16-17 
+Gyrs and Sa at 15  Gyrs.  Fits  at  13-14  Gyrs  are  however  also  available 
+although less satisfying. The  correspondance  of  our spectral types with the
+Reference  Catalogue  3, de Vaucouleurs et al., 1991 are well defined, whereas 
+the file "RVF_spec1G.res" corresponds to the evolution  of a 1  Gyr  starburst 
+valid for the inner part of giant ellipticals at 13-17 Gyrs.
+
+
+2.1. Identification of the types
+********************************
+
+File			RC3 type	Age of the fit (Gyrs)	
+_____________________________________________________________
+
+RVF_1G.res             (ellipt. center)       15.
+RVF_specE16.res		 -5, -4		      16.
+RVF_specS016.res	 -3,-2,-1	      16.
+RVF_specSa15.res	  0,1,2		      15.
+
+RVF_specSb.res		   3		      13.
+RVF_specSbc.res		   4		      13.
+RVF_specSc.res		   5		      12.
+RVF_specSd.res		  6,7		      10.
+RVF_specIm.res		  8,9,10	       4.5
+
+RVF_specE13.res		 -5, -4		      13.
+RVF_specS013.res	 -3,-2,-1	      13.
+RVF_specSa13.res	  0,1,2		      13.
+
+
+2.2. Evolutionary scenarios
+***************************
+
+The spectra are computed with the evolutionary tracks of Bressan et al., 1983,
+Groenewegen and de Jong, 1993, Schoenberner,  1983, and Bloecker T., 1995, the
+Rana & Basu,  1992, IMF and our  library  of UV to NIR  stellar  spectra  (see
+reference papers or FRV_MODELE/, this CDROM for details).
+
+File		   nu (#2)  ejecta (#3)  extinction (#4)  nebular emission (#5)
+_______________________________________________________________________________
+
+RVF_1G.res	(1 Gyr burst) (1.)		   n		0.7
+
+RVF_specE16.res	   0.5 e-2    0.75		   n		0.7
+RVF_specS016.res   0.1 e-2    0.9		   n		0.7
+RVF_specSa15.res   0.5 e-3    1.		y : 57.3	0.7
+
+RVF_specSb.res	   0.35e-3    1.		y : 57.3	0.7
+RVF_specSbc.res	   0.2 e-3    1.		y : 57.3	0.7
+RVF_specSc.res	   0.1 e-3    1.		y : 57.3	0.7
+RVF_specSd.res	   0.07e-3    1.		y : 57.3	0.7
+RVF_specIm.res	   0.05e-3    1.		y : 0.		0.7
+
+RVF_specE13.res	   0.5 e-2    0.5		   n		0.7
+RVF_specS013.res   0.1 e-2    0.75		   n		0.7
+RVF_specSa13.res   0.5 e-3    0.9		y : 57.3	0.7
+
+
+
+(#2) : SFR=nu*(gas fraction), nu in Msol/Myr by Msol of galaxy.
+(#3) : Fraction of stellar ejecta avalaible for further star formation.
+(#4) : Extinction for a disk geometry. If it is considered ("y"), the
+       inclination relative to the axis is written in degrees. "57.3"
+       degrees (=1 rad) is the mean inclinaison over solid angles.
+(#5) : Fraction of Lyman continuum photons absorbed by the gas and 
+       contributing to the nebular emission (continuum and lines) 
+       of HII regions. 
+	
+
+2.3. Contents of spectra files (RVF_spec...)
+********************************************
+
+   All calculations are made for one solar mass of galaxy.
+
+   L 1-7      : description of the evolutionary scenario.
+   L 8        : number of timesteps (68), of wavelengths of the continuum  
+                (1298) and of emission lines (61).
+   L 9-268    : wavelengths of the continuum (5 on each line (only 3 on L 268))
+   L 269-281  : wavelengths of emission lines(5 on each line (only 1 on L 281))
+   L 282      : - age of the model at the 1st timestep (integer (Myr)).
+                - gas fraction.
+                - metallicity.
+                - star formation rate (Msol/Myr  by Msol of galaxy).
+   	        - number of Lyman continuum photons /sec.
+	        - bolometric luminosity (erg/s) (without extinction and nebular
+                  emission).
+	        - number of SNII/Myr (number of dying stars more massive than 
+                  8 Msol).
+	        - mass fraction of compact objects (white dwarfs, neutron stars
+	          and black holes).
+   L 283-542  : continuum flux (Flambda) in erg/s/A corresponding to the 
+                  wavelengths of L 9-268 (#6).
+   L 543-555  : flux (erg/s) in the emission lines (see L 269-281).
+   L 556      : same as L 282 at the 2nd timestep.
+   L 557-816  : same as L 283-542 at the 2nd timestep.
+
+	       ... and so on till the last timestep ...
+
+
+(#6) : For wavelengths shorter than 912 A (70 first wavelengths), the fluxes 
+       are the ones remaining after absorption by the gas. You should put them 
+       to 0 if you consider that dust absorbs the reminder.
+
+   You may read these data with the following procedure :
+	      open(10,status='old',file='FRV_convolsursaut.res')
+	      do i=1,7
+        	 read(10,'(a)') caracteristiques ! Evolutionary scenario
+	      enddo
+	      read(10,*) nbtps,nblambda,nbraies
+	      do i=1,nblambda/5
+	         read(10,*) (lambda(j),j=5*i-4,5*i)
+	      enddo
+	      if (nblambda-5*(nblambda/5).ne.0) then
+	         read(10,*) (lambda(i),i=5*(nblambda/5)+1,nblambda)
+	      endif      
+	      do i=1,nbraies/5
+	         read(10,*) (lambdaraie(j),j=5*i-4,5*i)
+	      enddo
+	      if (nbraies-5*(nbraies/5).ne.0) then
+	         read(10,*) (lambdaraie(i),i=5*(nbraies/5)+1,nbraies)
+	      endif
+	      do j=1,nbtps
+	         read(10,*) tps(j),sigma(j),zmet(j),TFE(j),NLym(j),
+	     1        fluxbol(j),nbSNII(j),sigmacomp(j)
+	         do i=1,nblambda/5
+	            read(10,*) (flux(j,k),k=5*i-4,5*i)
+        	 enddo
+	         if (nblambda-5*(nblambda/5).ne.0) then
+        	    read(10,*) (flux(j,i),i=5*(nblambda/5)+1,nblambda)
+	         endif
+        	 do i=1,nbraies/5
+	            read(10,*) (fluxraie(j,k),k=5*i-4,5*i)
+        	 enddo
+	         if (nbraies-5*(nbraies/5).ne.0) then
+        	    read(10,*) (fluxraie(j,i),i=5*(nbraies/5)+1,nbraies)
+	         endif
+	      end do
+	      close(10)   
+
+The names of variables and arrays are :
+	- lambda(i), i in [1..nblambda] : wavelength of the continuum.
+	- lambdaraie(i), i in [1..nbraies] : wavelength of a line.
+	- tps(j) : age in Myr (integer), j (indice of the timestep,
+	  in [1..nbtps]).
+	- sigma(j) : gas fraction.
+	- zmet(j) : metallicity of the interstellar medium.
+	- TFE(j) : star formation rate.
+	- NLym(j) : number of Lyman continuum photons.
+	- fluxbol(j) : bolometric flux.
+	- nbSNII(j) : number of SNII.
+	- sigmacomp(j) : fraction of compact objects.
+	- flux(j,i) : flux of the continuum at lambda(i).
+	- fluxraie(j,i) : flux in the ith emission line.
+
+
+3. Colors and other quantities (RVF_coul...)
+____________________________________________
+
+   Colors and other quantities computed from "RVF_spec..." are written 
+   in "RVF_coul...". 
+
+   All absolute quantities are for one solar mass of galaxy :
+         - time : age in Myr.
+	 - Mg/MT : gas fraction.
+	 - Mc/MT : fraction of compact objects.
+	 - SFR : star formation rate (M/Msol/Myr)
+	 - SNII : number of SNII/Myr.
+  	 - NLymcont : number of Lyman continuum photons per second.
+	 - W(Ha+NII) : equivalent width of Halpha + [NII].
+	 - W(Hb) : equivalent width of Hbeta.
+	 - M/LB : mass/B luminosity in Msol/LBsol.
+	 - M/LV : mass/V luminosity in Msol/LVsol.
+	 - Lbol/Lsol : bolometric luminosity (without nebular emission
+    		       and extinction) in solar units.
+	 - V : absolute V-magnitude.
+
+   L 1-7     : description of the evolutionary scenario.
+   L 9-76    : for each age, the following quantities are listed:
+   time; Mg/MT; Mc/MT; SFR; SNII; NLymcont; W(Ha+NII); W(Hb); M/LB; M/LV
+   L 78-145  : for each age
+   time; Lbol/Lsol; V; U-B; B-V; V-K; V-Rc; V-Ic; J-H; H-K
+   L 147-214 : for each age,
+   time; K-L; K-M; V-Rj; V-Ij; J+-V; U+-J+; J+-F+; F+-N+; UV-V
+   L 216-283 : for each age,
+   time; V-Id; Id-Jd; Jd-Kd; BJ-V; BJ-RF; V-606; 300-450; 450-606; 606-814
+   
+   The contents of the columns are recalled on L 8, 77, 146 and 215.
+
+
+4. k- and k+e-corrections
+_________________________
+
+   k- and k+e (#7) corrections are computed in the following filters :
+
+   1  : V			14 : N+ (Kron)                         
+   2  : U			15 : Rc (Cousins)                       
+   3  : B			16 : Ic (Cousins)                       
+   4  : R (Johnson)     	17 : UV 2000 FOCA (provided by Donas) 
+   5  : I (Johnson)		18 : I DENIS (provided by Coppet)  
+   6  : J (Bessel & Brett)	19 : J DENIS (provided by Coppet) 
+   7  : H (Bessel & Brett)	20 : Ks DENIS (provided by Coppet) 
+   8  : K (Bessel & Brett)	21 : BJ (Couch-Newell)
+   9  : L (Bessel & Brett)	22 : RF (Couch-Newell)
+   10 : M (Bessel & Brett) 	23 : F300W (WFPC2/HST)
+   11 : U+ (Kron)		24 : F450W (WFPC2/HST)
+   12 : J+ (Kron)		25 : F606W (WFPC2/HST)
+   13 : F+ (Kron)		26 : F814W (WFPC2/HST)
+
+
+(#7) : Although e-corrections may be computed separately, we do not recommand
+       to use our e-corrections with k-corrections calculated by other 
+       authors.
+
+
+We have  calculated k- and  k+e- corrections  from the  synthetic spectra in 3 
+cosmologies.  The  redshift  of  formation  has been  chosen  in each  case in
+agreement  with the age defined by the best fits of templates  at z=0.  .  The
+corrections  are  written  in  RVF_keE_1.res   (elliptical,  1rst  cosmology),
+RVF_keE_2.res  (2nd  cosmology)  RVF_keE_3.res  (3nd  cosmology), as described
+below in 4.1.
+
+   Each file ("RVF_keE_1.res" for example) contains following data :
+
+   L 1 : file of synthetic spectra ("RVF_specE16.res").
+   L 2 : Hubble constant in km/s/Mpc ("H0 = 50.").
+   L 3 : Reduced density parameter ("Omega0 = 0.10").
+   L 4 : Reduced cosmological constant ("Cosmological constant = 0.00").
+   L 5 : Redshift of galaxy formation, i.e. first stars ("zfor = 15.0").
+   L 6 : Cosmic time of galaxy formation in Gyrs ("tfor =  0.560").
+   L 7 : Description of the columns.
+   L 8 : Indice of the filter ("1") and number of redshift values ("26") 
+	 at which the corrections are given.
+   L 9-34 : redshift, cosmic time in Gyrs, k-correction and k+e-correction.
+   L 35 : same as L 8 for the 2nd filter.
+   L 36-54 : same as L 9-34 for the 2nd filter.
+
+		... and so on till the 26th filter ...
+
+
+4.1. Cosmology 1
+****************
+
+   H0 = 50 km/s/Mpc
+   Omega0 = 0.1
+   Reduced cosmological constant = 0.
+
+File of corrections	File of spectra		Formation redshift
+__________________________________________________________________
+
+RVF_ke1G_1.res		RVF_spec1G.res			15.
+RVF_keE_1.res		RVF_specE16.res			15.
+RVF_keS0_1.res		RVF_specS016.res		 7.
+RVF_keSa_1.res		RVF_specSa15.res		 4.
+RVF_keSb_1.res		RVF_specSb.res			 2.2
+RVF_keSbc_1.res		RVF_specSbc.res			 2.2
+RVF_keSc_1.res		RVF_specSc.res			 1.7
+RVF_keSd_1.res		RVF_specSd.res			 1.1
+RVF_keIm_1.res		RVF_specIm.res			 0.3
+
+
+4.2. Cosmology 2
+****************
+
+   H0 = 50 km/s/Mpc
+   Omega0 = 1.
+   Reduced cosmological constant = 0.
+
+File of corrections	File of spectra		Formation redshift
+__________________________________________________________________
+
+RVF_ke1G_2.res		RVF_spec1G.res			20.
+RVF_keE_2.res		RVF_specE13.res			20.
+RVF_keS0_2.res		RVF_specS013.res		20.
+RVF_keSa_2.res		RVF_specSa13.res		20.
+RVF_keSb_2.res		RVF_specSb.res			10.
+RVF_keSbc_2.res		RVF_specSbc.res			10.
+RVF_keSc_2.res		RVF_specSc.res			 4.5
+RVF_keSd_2.res		RVF_specSd.res			 1.6
+RVF_keIm_2.res		RVF_specIm.res			 0.35
+
+
+4.3. Cosmology 3
+****************
+
+   H0 = 75 km/s/Mpc
+   Omega0 = 0.1
+   Reduced cosmological constant = 0.9
+
+File of corrections	File of spectra		Formation redshift
+__________________________________________________________________
+
+RVF_ke1G_3.res		RVF_spec1G.res			20.
+RVF_keE_3.res		RVF_specE16.res			20.
+RVF_keS0_3.res		RVF_specS016.res		20.
+RVF_keSa_3.res		RVF_specSa15.res		 5.5
+RVF_keSb_3.res		RVF_specSb.res			 2.8
+RVF_keSbc_3.res		RVF_specSbc.res			 2.8
+RVF_keSc_3.res		RVF_specSc.res			 2.2
+RVF_keSd_3.res		RVF_specSd.res			 1.45
+RVF_keIm_3.res		RVF_specIm.res			 0.45
+
+
+
+
+
+
+REFERENCES :
+
+Aaronson M., 1978, ApJL 221, L103
+
+Bloecker T., 1995, AA 299, 755
+
+Bressan A., Fagotto F., Bertelli G., Chiosi C., 1993, AASS 100, 647
+
+de Vaucouleurs G., de Vaucouleurs A., Corwin H., Buta R., Paturel G., Forque 
+P., 1991, Third Reference Catalogue of Bright Galaxies (Springer, New York)
+  
+Groenewegen M.A.T., de Jong T., 1993, AA 267, 410
+
+Kennicutt R. C., 1992, ApJ 388, 310
+
+Rana N.C., Basu S., 1992, AA 265, 499 
+
+Schoenberner D., 1983, ApJ 272, 708
+
