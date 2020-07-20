@@ -63,7 +63,6 @@ def filterlist_to_filterfiles(filterlist, template_spectrum):
         if line_number == len(spectra_file_lines) - 1:
             line = line.split(" ")
             wavelengths_template_spectrum.append(float(line[0]))
-
     zeropointlist = []
     pivotlist = []
     filterfilelist = [' '] * len(filterlist)
@@ -195,11 +194,9 @@ def specarray_to_counts(spectrum, filter_file_list):
     toPhotonFlux = 5.03 * (10 ** 7)
     spectraWavelengths = spectrum[:, 0]
     flux = spectrum[:, 1]
-
     counts_array = []
-    counts = 0
     for fileName in filter_file_list:
-        fileName = "../filters/" + fileName
+        # fileName = "../filters/" + fileName
 
         try:
             filterFile = open(fileName)
@@ -220,6 +217,7 @@ def specarray_to_counts(spectrum, filter_file_list):
 
         # Input and interpolate filter data
         with open(fileName, 'r') as csvfile:
+            counts = 0
             # filterReader = csv.reader(csvfile, delimiter = filterDelim, skipinitialspace = True)
             for line in csvfile:
                 row = line.split()
