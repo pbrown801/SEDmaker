@@ -4,7 +4,7 @@ import seaborn as sns
 import time
 import pandas as pd
 import numpy as np
-from utilities import *
+from utilities import filterlist_to_filterfiles, specarray_to_counts, isfloat, sp
 
 # filter_file_list = ['UVW2', 'UVM2', 'UVW1',  'U', 'B', 'V', 'R', 'I']
 filter_file_list = ['UVW2', 'UVM2', 'UVW1',  'U', 'B', 'V']
@@ -30,20 +30,6 @@ print("COUNT: ",count)
 print("Flux: ",flux)
 print("Pivot: ",pivotlist)
 
-# # ATTEMPT USING SEABORN
-# spectra_df = pd.DataFrame({'Spectrum Wavelength': spectra_wavelength, 'Spectrum Flux Density': spectra_flux_dens})
-# pivot_df = pd.DataFrame({'Flux Density per Pivot Wavelength': flux, 'Pivot Wavelength': pivotlist})
-# sns.set()
-# sns.lineplot(x='Spectrum Wavelength', y='Spectrum Flux Density', data=spectra_df)
-# plt.xlim(1000, 20000)
-# plt.show()
-
-# sns.set()
-# sns.scatterplot(x='Pivot Wavelength', y='Flux Density per Pivot Wavelength', data=pivot_df)
-# plt.xlim(1000, 20000)
-# plt.show()
-
-# ATTEMPT USING PYPLOT
 fig=plt.figure()
 ax=plt.axes()
 ax.plot(spectra_wave, spectra_flux)
@@ -52,4 +38,4 @@ plt.xlim(1000, 20000)
 plt.xlabel("Wavelength")
 plt.ylabel("Flux Density")
 plt.title("SED for Vega spectrum")
-plt.show()
+# plt.show()
