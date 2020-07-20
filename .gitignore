@@ -1,3 +1,4 @@
 python/__pycache__/
 
-output/*
+# output/csv/*.csv
+# output/plots/*.png
