@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import csv
+import math
+import scipy.interpolate
 from utilities import filterlist_to_filterfiles, specarray_to_counts, isfloat, sp
 
 
@@ -18,7 +20,7 @@ def SED(spectra, filter_list, flux_convert):
 
     Use specarray_to_counts to get the counts for each filter. 
         - Calculate counts based on the spectrum wavelength vs flux and filter wavelength vs effectiveAreas 
-    
+
     Convert the count rate to flux density using the flux conversion constant and dividing by + 10^16
     These flux densities correspond to the pivot wavelegnth of each filter.
 
@@ -26,10 +28,11 @@ def SED(spectra, filter_list, flux_convert):
 
     '''
 
-    #Creates a list of filter files, list of zeropoint values, and list of pivot wavelengths corresponding to the filter list inputted from the parameters. 
-    filter_file_list, zeropointlist, pivotlist = filterlist_to_filterfiles(filter_list, spectra)
+    # Creates a list of filter files, list of zeropoint values, and list of pivot wavelengths corresponding to the filter list inputted from the parameters.
+    filter_file_list, zeropointlist, pivotlist = filterlist_to_filterfiles(
+        filter_list, spectra)
 
-    #Gets spectrum data and separates it into two lists for spectra wavelength and spectra flux.
+    # Gets spectrum data and separates it into two lists for spectra wavelength and spectra flux.
     spectra_data = list(map(sp, open('../spectra/'+spectra).readlines()))
     spectra_wave = []
     spectra_flux = []
@@ -51,22 +54,38 @@ def SED(spectra, filter_list, flux_convert):
     for idx, i in enumerate(flux_convert):
         flux.append((count[idx]*i)/(pow(10, 16)))
 
+    # Interpolate between the pivot wavelength and flux density 
+    f=scipy.interpolate.interp1d(pivotlist, flux, kind='linear')
+    
+    # Limit the spectrum wavelengths to within the pivotlist range for interpolation
+    spectra_wave_interp = []
+    for i in spectra_wave:
+        if (i > pivotlist[0] and i < pivotlist[-1]):
+            spectra_wave_interp.append(i)
+    spectra_wave_interp=np.array(spectra_wave_interp)
+    flux_interp = f(spectra_wave_interp)
+    spectrum_interp = np.column_stack((spectra_wave_interp, flux_interp))
+
+    # Pass the new interpolated spectrum to specarray_to_counts
+    count_interp = specarray_to_counts(spectrum_interp, filter_file_list)
+
     # Ouput the pivot wavelengths values and corresponding Flux density to csv file.
     with open('../output/csv/'+spectra[: spectra.find(".")]+'_info.csv', mode='w') as csv_file:
-        writer = csv.writer(csv_file, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(["Pivot Wavelength","Flux Density"])
-        for idx,i in enumerate(pivotlist):
+        writer = csv.writer(csv_file, delimiter=",",
+                            quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(["Pivot Wavelength", "Flux Density"])
+        for idx, i in enumerate(pivotlist):
             writer.writerow([i, flux[idx]])
 
     # Plotting pivot wavelength vs flux density
-    plt.plot(spectra_wave, spectra_flux) #Spectrum data
-    plt.plot(pivotlist, flux, 'r--') # Red dashes to see the curve
-    plt.plot(pivotlist, flux, 'ro') # Red points to see the particular points
-    plt.xlim(1000, 20000)
+    plt.plot(spectra_wave, spectra_flux)  # Spectrum data
+    plt.plot(pivotlist, flux, 'r--')  # Red dashes to see the curve
+    plt.plot(pivotlist, flux, 'ro')  # Red points to see the particular points
+    plt.xlim(0, pivotlist[-1]+17500)
     plt.xlabel("Wavelength")
     plt.ylabel("Flux Density")
     plt.title("SED for Vega spectrum")
-    plt.savefig('../output/plots/'+spectra+'_SED.png')
+    # plt.savefig('../output/plots/'+spectra+'_SED.png')
     # plt.show()
 
 
