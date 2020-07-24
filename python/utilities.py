@@ -41,9 +41,67 @@ def valid_wavelength(wavelength, template_minmax):
     return False
 
 
-def filterlist_to_filterfiles(filterlist, template_spectrum):
-    # from mangle_simple import pivot_wavelength
+def specarray_to_counts(spectrum, filter_file_list):
+    # Calculate counts based on the spectrum wavelength vs flux and filter wavelength vs effectiveAreas
+    # spectraWavelengths, flux, and effectiveAreas are np_arrays with the same length
+    # Value returned is counts, which is a floating-point numeric value
+    # Calculate counts
+    toPhotonFlux = 5.03 * (10 ** 7)
+    spectraWavelengths = spectrum[:, 0]
+    flux = spectrum[:, 1]
+    counts_array = []
+    for fileName in filter_file_list:
+        # fileName = "../filters/" + fileName
 
+        try:
+            filterFile = open(fileName)
+        except(FileNotFoundError):
+            print("Unable to open filter file")
+            exit()
+
+        # All filter wavelenghts
+        filterWavelengths = np.array([])
+        # Effective areas for filter wavelengths
+        effectiveAreas = np.array([])
+
+        filterDelim = ""
+        if fileName.endswith(".csv"):
+            filterDelim = ","
+        else:
+            filterDelim = " "
+
+        # Input and interpolate filter data
+        with open(fileName, 'r') as csvfile:
+            counts = 0
+            # filterReader = csv.reader(csvfile, delimiter = filterDelim, skipinitialspace = True)
+            for line in csvfile:
+                row = line.split()
+                filterWavelengths = np.append(filterWavelengths, float(row[0]))
+                effectiveAreas = np.append(effectiveAreas, float(row[1]))
+            effectiveAreas = np.interp(
+                spectraWavelengths, filterWavelengths, effectiveAreas)
+            # plt.loglog(spectraWavelengths, effectiveAreas)
+            # plt.show()
+        # return effectiveAreas
+
+        # PART #3: Calculate counts
+        # Calculate counts based on the spectrum wavelength vs flux and filter wavelength vs effectiveAreas
+        # spectraWavelengths, flux, and effectiveAreas are np_arrays with the same length
+        # Value returned is counts, which is a floating-point numeric value
+        # Calculate counts
+        toPhotonFlux = 5.03 * (10 ** 7)
+        for i in range(0, len(spectraWavelengths) - 1):
+            photonFlux = toPhotonFlux * ((flux[i] + flux[i + 1]) / 2) * (
+                (spectraWavelengths[i] + spectraWavelengths[i + 1]) / 2)
+            count = ((effectiveAreas[i] + effectiveAreas[i + 1]) / 2) * photonFlux * (
+                spectraWavelengths[i + 1] - spectraWavelengths[i])
+            counts += count
+        # return counts
+        counts_array += [counts]
+    return (counts_array)
+
+# Edited the original function for SED.py
+def filterlist_to_filterfiles_2(filterlist, template_spectrum):
     # wavelengths_template_spectrum contains lowest and highest value in range of template_spectrum
     spectra_path = '../spectra/' + template_spectrum
     spectra_file = open(spectra_path, "r")
@@ -53,16 +111,15 @@ def filterlist_to_filterfiles(filterlist, template_spectrum):
     line_0 = True
     for line_number, line in enumerate(spectra_file_lines, start=0):
         line = line.strip()
-        if (line_number == 0) and (line[0] != "#"):
-            line = line.split(" ")
-            wavelengths_template_spectrum.append(float(line[0]))
-            line_0 = False
-        if line_0 and line_number == 1:
-            line = line.split(" ")
-            wavelengths_template_spectrum.append(float(line[0]))
-        if line_number == len(spectra_file_lines) - 1:
-            line = line.split(" ")
-            wavelengths_template_spectrum.append(float(line[0]))
+        if "#" not in line:
+            if line_0 and (line[0] != "#"):
+                line = line.split(" ")
+                wavelengths_template_spectrum.append(float(line[0]))
+                line_0 = False
+            if line_number == len(spectra_file_lines) - 1:
+                line = line.split(" ")
+                wavelengths_template_spectrum.append(float(line[0]))
+
     zeropointlist = []
     pivotlist = []
     filterfilelist = [' '] * len(filterlist)
@@ -183,64 +240,4 @@ def filterlist_to_filterfiles(filterlist, template_spectrum):
             if valid_wavelength(pivot, wavelengths_template_spectrum):
                 pivotlist.append(pivot)
                 zeropointlist.append(11.77)
-    return(filterfilelist, zeropointlist, pivotlist)
-
-
-def specarray_to_counts(spectrum, filter_file_list):
-    # Calculate counts based on the spectrum wavelength vs flux and filter wavelength vs effectiveAreas
-    # spectraWavelengths, flux, and effectiveAreas are np_arrays with the same length
-    # Value returned is counts, which is a floating-point numeric value
-    # Calculate counts
-    toPhotonFlux = 5.03 * (10 ** 7)
-    spectraWavelengths = spectrum[:, 0]
-    flux = spectrum[:, 1]
-    counts_array = []
-    for fileName in filter_file_list:
-        # fileName = "../filters/" + fileName
-
-        try:
-            filterFile = open(fileName)
-        except(FileNotFoundError):
-            print("Unable to open filter file")
-            exit()
-
-        # All filter wavelenghts
-        filterWavelengths = np.array([])
-        # Effective areas for filter wavelengths
-        effectiveAreas = np.array([])
-
-        filterDelim = ""
-        if fileName.endswith(".csv"):
-            filterDelim = ","
-        else:
-            filterDelim = " "
-
-        # Input and interpolate filter data
-        with open(fileName, 'r') as csvfile:
-            counts = 0
-            # filterReader = csv.reader(csvfile, delimiter = filterDelim, skipinitialspace = True)
-            for line in csvfile:
-                row = line.split()
-                filterWavelengths = np.append(filterWavelengths, float(row[0]))
-                effectiveAreas = np.append(effectiveAreas, float(row[1]))
-            effectiveAreas = np.interp(
-                spectraWavelengths, filterWavelengths, effectiveAreas)
-            # plt.loglog(spectraWavelengths, effectiveAreas)
-            # plt.show()
-        # return effectiveAreas
-
-        # PART #3: Calculate counts
-        # Calculate counts based on the spectrum wavelength vs flux and filter wavelength vs effectiveAreas
-        # spectraWavelengths, flux, and effectiveAreas are np_arrays with the same length
-        # Value returned is counts, which is a floating-point numeric value
-        # Calculate counts
-        toPhotonFlux = 5.03 * (10 ** 7)
-        for i in range(0, len(spectraWavelengths) - 1):
-            photonFlux = toPhotonFlux * ((flux[i] + flux[i + 1]) / 2) * (
-                (spectraWavelengths[i] + spectraWavelengths[i + 1]) / 2)
-            count = ((effectiveAreas[i] + effectiveAreas[i + 1]) / 2) * photonFlux * (
-                spectraWavelengths[i + 1] - spectraWavelengths[i])
-            counts += count
-        # return counts
-        counts_array += [counts]
-    return (counts_array)
+    return(filterfilelist, pivotlist)
