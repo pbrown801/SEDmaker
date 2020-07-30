@@ -100,6 +100,7 @@ def specarray_to_counts(spectrum, filter_file_list):
         counts_array += [counts]
     return (counts_array)
 
+
 # Edited the original function for SED.py
 def filterlist_to_filterfiles_2(filterlist, template_spectrum):
     # wavelengths_template_spectrum contains lowest and highest value in range of template_spectrum

@@ -9,6 +9,39 @@ import os
 from utilities import filterlist_to_filterfiles_2, specarray_to_counts, isfloat, sp
 
 
+def high_res_SED(pivotlist, count, flux, filter_file_list, flux_convert):
+    # Interpolate between the pivot wavelength and flux density
+    f = scipy.interpolate.interp1d(
+        pivotlist, flux, kind='linear', fill_value="extrapolate")
+
+    # Wavelength range 1600-8000 Angstroms
+    extrap = [i*10 for i in range(160, 801)]
+
+    # Using the fill_value parameter of scipy interpolate we can extrapolate more values outside the pivot wavelength range
+    flux_interp = f(extrap)
+    spectrum_interp = np.column_stack((extrap, flux_interp))
+
+    # Pass the new interpolated spectrum to specarray_to_counts
+    count_interp = specarray_to_counts(spectrum_interp, filter_file_list)
+
+    # Convert count to flux using flux conversion values
+    flux_interp = []
+    for idx, i in enumerate(flux_convert):
+        flux_interp.append((count_interp[idx]*i)/(pow(10, 16)))
+
+    # print("FILTER LIST: ", filter_list)
+    # print("COUNT: ", count)
+    # print("INTERP COUNT: ", count_interp)
+    # print("FLUX: ", flux)
+    # print("INTERP FLUX: ", flux_interp)
+
+    error = []
+    for idx, i in enumerate(count):
+        error.append((np.abs(i-count_interp[idx])/i)*100)
+    print("PERCENT ERROR: ", error)
+
+    return flux_interp
+
 def SED(spectrum, filter_list, flux_convert):
     '''
     Parameters: 
@@ -41,6 +74,7 @@ def SED(spectrum, filter_list, flux_convert):
         # Creates a list of filter files, list of zeropoint values, and list of pivot wavelengths corresponding to the filter list inputted from the parameters.
         filter_file_list, pivotlist = filterlist_to_filterfiles_2(
             filter_list, spectrum_dir[1:])
+
         # Gets spectrum data and separates it into two lists for spectra wavelength and spectra flux.
         spectrum_data = list(
             map(sp, open('../spectra/'+spectrum_dir[1:]).readlines()))
@@ -51,6 +85,9 @@ def SED(spectrum, filter_list, flux_convert):
                 if isfloat(spectrum_data[i][0]) or isfloat(spectrum_data[i][1]):
                     spectrum_wave.append(float(spectrum_data[i][0]))
                     spectrum_flux.append(float(spectrum_data[i][1]))
+
+        df = pd.DataFrame({'spectrum_wave': spectrum_wave, 'spectrum_flux': spectrum_flux})
+
         # Convert the lists to numpy arrays.
         spectrum_wavelength = np.array(spectrum_wave)
         spectrum_flux_dens = np.array(spectrum_flux)
@@ -60,40 +97,29 @@ def SED(spectrum, filter_list, flux_convert):
         # Pass the spectrum information along with the filter file list to specarray_to_counts to get counts (count rates) for each filter.
         count = specarray_to_counts(spectrum_orig, filter_file_list)
 
-        # Convert count to flux using flux conversion values
+        # Calculate avg flux +/- 50 Angstroms from pivotwavelengths of each filter
+        flux_avg = []
+        for p in pivotlist:
+            temp=(df.loc[(df['spectrum_wave']>=p-50) & (df['spectrum_wave']<=p+50)])
+            flux_avg.append(temp['spectrum_flux'].sum()/len(temp['spectrum_flux']))
+
+        # Calculate conversion factors avg flux / count rate
+        new_flux_convert = []
+        for idx, f in enumerate(flux_avg):
+            new_flux_convert.append((f/count[idx])*pow(10,16))
+        print(new_flux_convert)
+
+        # Convert count to flux using flux conversion values from input
         flux = []
         for idx, i in enumerate(flux_convert):
             flux.append((count[idx]*i)/(pow(10, 16)))
 
-        # Interpolate between the pivot wavelength and flux density
-        f = scipy.interpolate.interp1d(
-            pivotlist, flux, kind='linear', fill_value="extrapolate")
+        flux_2 = []
+        for idx, i in enumerate(new_flux_convert):
+            flux_2.append((count[idx]*i)/(pow(10, 16)))
 
-        # Wavelength range 1600-8000 Angstroms
-        extrap = [i*10 for i in range(160, 801)]
-
-        # Using the fill_value parameter of scipy interpolate we can extrapolate more values outside the pivot wavelength range
-        flux_interp = f(extrap)
-        spectrum_interp = np.column_stack((extrap, flux_interp))
-
-        # Pass the new interpolated spectrum to specarray_to_counts
-        count_interp = specarray_to_counts(spectrum_interp, filter_file_list)
-
-        # Convert count to flux using flux conversion values
-        flux_interp = []
-        for idx, i in enumerate(flux_convert):
-            flux_interp.append((count_interp[idx]*i)/(pow(10, 16)))
-
-        print("FILTER LIST: ", filter_list)
-        print("COUNT: ", count)
-        print("INTERP COUNT: ", count_interp)
-        print("FLUX: ", flux)
-        print("INTERP FLUX: ", flux_interp)
-
-        error = []
-        for idx, i in enumerate(count):
-            error.append((np.abs(i-count_interp[idx])/i)*100)
-        print("PERCENT ERROR: ", error)
+        flux_interp = high_res_SED(pivotlist, count, flux, filter_file_list, flux_convert)
+        flux_interp_new_convert = high_res_SED(pivotlist, count, flux_2, filter_file_list, new_flux_convert)
 
         # Ouput the pivot wavelengths values and corresponding Flux density to csv file.
         with open('../output/csv/'+spectrum[: spectrum.find(".")]+'_info.csv', mode='w') as csv_file:
@@ -110,13 +136,16 @@ def SED(spectrum, filter_list, flux_convert):
         plt.plot(pivotlist, flux, 'ro')
         plt.plot(pivotlist, flux_interp, 'g--')
         plt.plot(pivotlist, flux_interp, 'go')
+        plt.plot(pivotlist, flux_interp_new_convert, 'y--')
+        plt.plot(pivotlist, flux_interp_new_convert, 'yo')
+        # Plot settings
         plt.xlim(0, pivotlist[-1]+12500)
         plt.xlabel("Wavelength (Angstroms)")
         plt.ylabel("Flux Density")
         plt.title(
             "SED for " + spectrum[: spectrum.find(".")].capitalize()+" Spectrum")
-        plt.savefig('../output/plots/' +
-                    spectrum[: spectrum.find(".")]+'_SED.png')
+        # plt.savefig('../output/plots/' +
+        #             spectrum[: spectrum.find(".")]+'_SED.png')
         plt.show()
 
 

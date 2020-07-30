@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import numpy as np
 import math
-from utilities import filterlist_to_filterfiles, specarray_to_counts, isfloat, sp
+from utilities import filterlist_to_filterfiles_2, specarray_to_counts, isfloat, sp
 
 # # filter_file_list = ['UVW2', 'UVM2', 'UVW1',  'U', 'B', 'V', 'R', 'I']
 # filter_file_list = ['UVW2', 'UVM2', 'UVW1',  'U', 'B', 'V']
