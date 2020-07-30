@@ -29,12 +29,6 @@ def high_res_SED(pivotlist, count, flux, filter_file_list, flux_convert):
     for idx, i in enumerate(flux_convert):
         flux_interp.append((count_interp[idx]*i)/(pow(10, 16)))
 
-    # print("FILTER LIST: ", filter_list)
-    # print("COUNT: ", count)
-    # print("INTERP COUNT: ", count_interp)
-    # print("FLUX: ", flux)
-    # print("INTERP FLUX: ", flux_interp)
-
     error = []
     for idx, i in enumerate(count):
         error.append((np.abs(i-count_interp[idx])/i)*100)
@@ -86,8 +80,6 @@ def SED(spectrum, filter_list, flux_convert):
                     spectrum_wave.append(float(spectrum_data[i][0]))
                     spectrum_flux.append(float(spectrum_data[i][1]))
 
-        df = pd.DataFrame({'spectrum_wave': spectrum_wave, 'spectrum_flux': spectrum_flux})
-
         # Convert the lists to numpy arrays.
         spectrum_wavelength = np.array(spectrum_wave)
         spectrum_flux_dens = np.array(spectrum_flux)
@@ -97,7 +89,13 @@ def SED(spectrum, filter_list, flux_convert):
         # Pass the spectrum information along with the filter file list to specarray_to_counts to get counts (count rates) for each filter.
         count = specarray_to_counts(spectrum_orig, filter_file_list)
 
+        # Convert count to flux using flux conversion values from input
+        flux = []
+        for idx, i in enumerate(flux_convert):
+            flux.append((count[idx]*i)/(pow(10, 16)))
+
         # Calculate avg flux +/- 50 Angstroms from pivotwavelengths of each filter
+        df = pd.DataFrame({'spectrum_wave': spectrum_wave, 'spectrum_flux': spectrum_flux})
         flux_avg = []
         for p in pivotlist:
             temp=(df.loc[(df['spectrum_wave']>=p-50) & (df['spectrum_wave']<=p+50)])
@@ -109,16 +107,14 @@ def SED(spectrum, filter_list, flux_convert):
             new_flux_convert.append((f/count[idx])*pow(10,16))
         print(new_flux_convert)
 
-        # Convert count to flux using flux conversion values from input
-        flux = []
-        for idx, i in enumerate(flux_convert):
-            flux.append((count[idx]*i)/(pow(10, 16)))
-
         flux_2 = []
         for idx, i in enumerate(new_flux_convert):
             flux_2.append((count[idx]*i)/(pow(10, 16)))
 
+        # Not changing conversion factors but using the 6 flux points to make a extrapolated spectrum and get new count rates 
+        # which are then converted to flux 
         flux_interp = high_res_SED(pivotlist, count, flux, filter_file_list, flux_convert)
+        # Using conversion factors created we run it through high_res SED to get new count rates. 
         flux_interp_new_convert = high_res_SED(pivotlist, count, flux_2, filter_file_list, new_flux_convert)
 
         # Ouput the pivot wavelengths values and corresponding Flux density to csv file.
@@ -131,9 +127,11 @@ def SED(spectrum, filter_list, flux_convert):
 
         # Plotting pivot wavelength vs flux density along with the interpolated flux densities
         plt.plot(spectrum_wave, spectrum_flux)  # Spectrum data
+        # Points from initial conversion of count rates to flux 
         plt.plot(pivotlist, flux, 'r--')  # Red dashes to see the curve
         # Red points to see the particular points
         plt.plot(pivotlist, flux, 'ro')
+        # points from high_res_SED funcs using the spectrum extrapolated from the initial 6 points.
         plt.plot(pivotlist, flux_interp, 'g--')
         plt.plot(pivotlist, flux_interp, 'go')
         plt.plot(pivotlist, flux_interp_new_convert, 'y--')
@@ -144,8 +142,8 @@ def SED(spectrum, filter_list, flux_convert):
         plt.ylabel("Flux Density")
         plt.title(
             "SED for " + spectrum[: spectrum.find(".")].capitalize()+" Spectrum")
-        # plt.savefig('../output/plots/' +
-        #             spectrum[: spectrum.find(".")]+'_SED.png')
+        plt.savefig('../output/plots/' +
+                    spectrum[: spectrum.find(".")]+'_SED.png')
         plt.show()
 
 
