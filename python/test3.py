@@ -148,7 +148,7 @@ def high_res_SED(pivotlist, count_orig, flux, filter_file_list, flux_convert):
     return flux_extrap, error
 
 
-def SED_plot(spectrum, spectrum_df, pivotlist):
+def SED_plot(spectrum, spectrum_df, pivotlist, flux_convert_name):
     '''
     Parameters: 
         spectrum     -- The spectrum file you wish to overlay the SED on.
@@ -164,15 +164,13 @@ def SED_plot(spectrum, spectrum_df, pivotlist):
 
     fig, ax = plt.subplots()
     # Plot spectrum
-    ax.plot(spectrum_df['spectrum_wave'], spectrum_df['spectrum_flux'])
+    ax.plot(spectrum_df['spectrum_wave'], spectrum_df['spectrum_flux'], label='Spectrum')
     # Plot Settings
-    ax.set_xlim(0, pivotlist[-1]+12500)
     ax.set_xlabel("Wavelength (Angstroms)")
     ax.set_ylabel("Flux Density")
     ax.set_title(
-        "SED for " + spectrum[: spectrum.find(".")].capitalize()+" Spectrum")
+        "SED for " + spectrum[: spectrum.find(".")].capitalize()+"Spectrum w/ " +flux_convert_name +" conversion input")
     ax.axis = ('equal')
-    # leg=ax.legend()
     return ax
 
 
@@ -198,11 +196,15 @@ def SED(spectrum, filter_list, flux_convert, flux_conversion_static):
 
     Plot these points on top of the spectrum. The plot is wavelength vs. Flux density.
     '''
+    # Need to extract the conversion input name and values
+    for key in flux_convert:
+        flux_convert_name = key
+        flux_convert=flux_convert[flux_convert_name]
+
+    # check if spectrum file is in spectra directory
     spectrum_dir, spectrum_bool = spec_dir(spectrum)
+    
     if spectrum_bool:
-        # for i in flux_conversion_static:
-        #     if flux_convert == i:
-        #         flux_conversion_static.remove(i)
 
         # Creates a list of filter files, list of zeropoint values, and list of pivot wavelengths corresponding to the filter list inputted from the parameters.
         filter_file_list, pivotlist = filterlist_to_filterfiles_2(
@@ -217,30 +219,34 @@ def SED(spectrum, filter_list, flux_convert, flux_conversion_static):
         new_flux_convert = calc_convert_factors(
             spectrum_df, pivotlist, count_orig)
 
-        # Convert the count rates to flux densities
+        # Convert the count rates to flux densities using various conversions
         flux_comparison = count_to_flux(count_orig, flux_convert)
+
         if flux_convert != flux_conversion_static[0]:
             flux_vega = count_to_flux(count_orig, flux_conversion_static[0])
+            flux_extrap_vega, error_extrap_vega = high_res_SED(
+                pivotlist, count_orig, flux_vega, filter_file_list, flux_conversion_static[0])
+        else:
+            flux_extrap_vega, error_extrap_vega = high_res_SED(
+                pivotlist, count_orig, flux_comparison, filter_file_list, flux_conversion_static[0])
+        
         if flux_convert != flux_conversion_static[1]:
             flux_Pickles = count_to_flux(count_orig, flux_conversion_static[1])
+        
         flux_calc_conversion = count_to_flux(count_orig, new_flux_convert)
 
-        # Get a higher resolution SED by extrapolating between the flux densities.
-        flux_extrap_comparison, error_comparison = high_res_SED(
-            pivotlist, count_orig, flux_comparison, filter_file_list, flux_convert)
-        flux_extrap_calc_conversion, error_calc_conversion = high_res_SED(
-            pivotlist, count_orig, flux_calc_conversion, filter_file_list, new_flux_convert)
-
-        print("PERCENT ERROR: ", error_comparison)
-        print("PERCENT ERROR: ", error_calc_conversion)
-
         # Plotting - Uses the ax plot object to plot the flux densities found from using different methods
-        ax = SED_plot(spectrum, spectrum_df, pivotlist)
-        ax.plot(pivotlist, flux_comparison, 'ro--')
-        ax.plot(pivotlist, flux_extrap_comparison, 'go--')
-        ax.plot(pivotlist, flux_extrap_calc_conversion, 'yo--')
+        ax = SED_plot(spectrum, spectrum_df, pivotlist, flux_convert_name)
+        ax.plot(pivotlist, flux_comparison, 'ro--', label='comparison')
+        if flux_convert != flux_conversion_static[0]:
+            ax.plot(pivotlist, flux_vega, 'go--', label='vega')
+        ax.plot(pivotlist, flux_extrap_vega, 'yo--', label='vega+interation')
+        if flux_convert != flux_conversion_static[1]:
+            ax.plot(pivotlist, flux_Pickles, 'mo--', label='pickles')
+        ax.plot(pivotlist, flux_calc_conversion, 'ko--', label='calc convert')
+        ax.legend()
         plt.savefig('../output/plots/' +
-                    spectrum[: spectrum.find(".")]+'_SED.png')
+                    spectrum[: spectrum.find(".")]+'_SED_with'+flux_convert_name+'_conversion.png')
         plt.show()
 
     else:
@@ -261,7 +267,7 @@ def main():
         'Ia SN2011fe': [3.20, 2.95, 0.93, 2.01, 1.14, 2.42], 'Ia SN1992A': [3.82, 3.32, 0.85, 1.75, 1.08, 2.48], 'Ic SN1994I': [3.40, 7.53, 1.50, 1.91, 1.16, 2.96],
         'IIP SN1999em': [5.59, 6.45, 3.75, 1.69, 1.68, 1.33]}
     filter_file_list = ['UVW2', 'UVM2', 'UVW1',  'U', 'B', 'V']
-    flux_convert = flux_conversion_dict['vega']
+    flux_convert = {'vega': flux_conversion_dict['vega']}
     flux_conversion_static = [
         flux_conversion_dict['vega'], flux_conversion_dict['Pickles']]
     spectra = ['SN2017erp_m1_UVopt.dat']

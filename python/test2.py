@@ -29,6 +29,7 @@ def high_res_SED(pivotlist, count, flux, filter_file_list, flux_convert):
     for idx, i in enumerate(flux_convert):
         flux_interp.append((count_interp[idx]*i)/(pow(10, 16)))
 
+    # percent error for the count rate points for the original count rates from the inputted spectrum.
     error = []
     for idx, i in enumerate(count):
         error.append((np.abs(i-count_interp[idx])/i)*100)
@@ -105,7 +106,8 @@ def SED(spectrum, filter_list, flux_convert):
         new_flux_convert = []
         for idx, f in enumerate(flux_avg):
             new_flux_convert.append((f/count[idx])*pow(10,16))
-        print(new_flux_convert)
+        print("ORIG CONVERSION FACTORS: ", flux_convert)
+        print("NEW CONVERSION FACTORS: ",new_flux_convert)
 
         flux_2 = []
         for idx, i in enumerate(new_flux_convert):
@@ -150,7 +152,7 @@ def SED(spectrum, filter_list, flux_convert):
 def main():
     filter_file_list = ['UVW2', 'UVM2', 'UVW1',  'U', 'B', 'V']
     flux_conversion = [6.03, 8.30, 4.02, 1.44, 1.16, 2.62]
-    spectra = ['vega.dat']
+    spectra = ['SN2017erp_m1_UVopt.dat']
     for spectrum in spectra:
         SED(spectrum, filter_file_list, flux_conversion)
 
