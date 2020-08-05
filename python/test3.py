@@ -148,6 +148,13 @@ def high_res_SED(pivotlist, count_orig, flux, filter_file_list, flux_convert):
     return flux_extrap, error
 
 
+def high_res_SED_iteration(pivotlist, count_orig, flux, filter_file_list, flux_convert, iteration):
+    for i in range(iteration):
+        flux, error = high_res_SED(
+            pivotlist, count_orig, flux, filter_file_list, flux_convert)
+    return flux, error
+
+
 def SED_plot(spectrum, spectrum_df, pivotlist, flux_convert_name):
     '''
     Parameters: 
@@ -164,24 +171,27 @@ def SED_plot(spectrum, spectrum_df, pivotlist, flux_convert_name):
 
     fig, ax = plt.subplots()
     # Plot spectrum
-    ax.plot(spectrum_df['spectrum_wave'], spectrum_df['spectrum_flux'], label='Spectrum')
+    ax.plot(spectrum_df['spectrum_wave'],
+            spectrum_df['spectrum_flux'], label='Spectrum')
     # Plot Settings
     ax.set_xlabel("Wavelength (Angstroms)")
     ax.set_ylabel("Flux Density")
     ax.set_title(
-        "SED for " + spectrum[: spectrum.find(".")].capitalize()+"Spectrum w/ " +flux_convert_name +" conversion input")
+        "SED for " + spectrum[: spectrum.find(".")].capitalize()+"Spectrum w/ " + flux_convert_name + " conversion input")
+    ax.set_xlim(0, pivotlist[-1]+12500)
     ax.axis = ('equal')
     return ax
 
 
-def SED(spectrum, filter_list, flux_convert, flux_conversion_static):
+def SED(spectrum, filter_list, flux_convert, flux_conversion_static, vega_iteration):
     '''
     Parameters: 
-        spectrum     -- The spectrum file you wish to overlay the SED on.
-        filter_list  -- The filters you wish to create the SED points for.
-        flux_convert -- flux converion numbers for each filter_list in the same order.
+        spectrum               -- The spectrum file you wish to overlay the SED on.
+        filter_list            -- The filters you wish to create the SED points for.
+        flux_convert           -- flux converion numbers for each filter_list in the same order.
         flux_conversion_static -- flux conversion factors used with every spectrum that is inputted. 
                                   If vega or Pickles is the main flux_convert then it will not be created
+        vega_iteration         -- How many times we wish to iterate the high_res_SED for vega
 
     Use the spec_dir function to check if spectrum file exists.
 
@@ -191,7 +201,11 @@ def SED(spectrum, filter_list, flux_convert, flux_conversion_static):
     Use specarray_to_counts to get the counts for each filter. 
         - Calculate counts based on the spectrum wavelength vs flux and filter wavelength vs effectiveAreas 
 
-    Convert the count rate to flux density using the flux conversion constant and dividing by + 10^16
+    Calculate converstion factors using avg flux/ count rates from specarray_to_counts from spectrum
+
+    Convert the count rate to flux density using various flux conversion factors including the calculated one.
+    Use high_res_SED to get percent error for all flux values that were converted and used in the vega+iteration conversion method.
+
     These flux densities correspond to the pivot wavelegnth of each filter.
 
     Plot these points on top of the spectrum. The plot is wavelength vs. Flux density.
@@ -199,11 +213,11 @@ def SED(spectrum, filter_list, flux_convert, flux_conversion_static):
     # Need to extract the conversion input name and values
     for key in flux_convert:
         flux_convert_name = key
-        flux_convert=flux_convert[flux_convert_name]
+        flux_convert = flux_convert[flux_convert_name]
 
     # check if spectrum file is in spectra directory
     spectrum_dir, spectrum_bool = spec_dir(spectrum)
-    
+
     if spectrum_bool:
 
         # Creates a list of filter files, list of zeropoint values, and list of pivot wavelengths corresponding to the filter list inputted from the parameters.
@@ -220,27 +234,62 @@ def SED(spectrum, filter_list, flux_convert, flux_conversion_static):
             spectrum_df, pivotlist, count_orig)
 
         # Convert the count rates to flux densities using various conversions
+        # [comparison]
         flux_comparison = count_to_flux(count_orig, flux_convert)
+        flux_extrap_comparison, error_comparison = high_res_SED(
+            pivotlist, count_orig, flux_comparison, filter_file_list, flux_convert)
 
+        # [Vega]
         if flux_convert != flux_conversion_static[0]:
             flux_vega = count_to_flux(count_orig, flux_conversion_static[0])
             flux_extrap_vega, error_extrap_vega = high_res_SED(
                 pivotlist, count_orig, flux_vega, filter_file_list, flux_conversion_static[0])
+            # [Vega + iteration]
+            flux_extrap_vega_iter, error_extrap_vega_iter = high_res_SED_iteration(
+                pivotlist, count_orig, flux_vega, filter_file_list, flux_conversion_static[0], vega_iteration)
         else:
-            flux_extrap_vega, error_extrap_vega = high_res_SED(
-                pivotlist, count_orig, flux_comparison, filter_file_list, flux_conversion_static[0])
-        
+            # [Vega + iteration]
+            flux_extrap_vega_iter, error_extrap_vega_iter = high_res_SED_iteration(
+                pivotlist, count_orig, flux_comparison, filter_file_list, flux_conversion_static[0], vega_iteration)
+
+        # [Pickles]
         if flux_convert != flux_conversion_static[1]:
             flux_Pickles = count_to_flux(count_orig, flux_conversion_static[1])
-        
+            flux_extrap_Pickles, error_Pickles = high_res_SED(
+                pivotlist, count_orig, flux_Pickles, filter_file_list, flux_conversion_static[1])
+
+        # [Calculated conversion factors]
         flux_calc_conversion = count_to_flux(count_orig, new_flux_convert)
+        flux_extrap_calc_conversion, error_calc_conversion = high_res_SED(
+            pivotlist, count_orig, flux_calc_conversion, filter_file_list, new_flux_convert)
+
+        # Print percent errors for count rates
+        # [comparison]
+        print("Comparison error: ", error_comparison)
+        # [Vega]
+        if flux_convert != flux_conversion_static[0]:
+            print("Vega error: ", error_extrap_vega)
+        else:
+            print("Vega error is comparison error")
+
+        # [Vega + iteration]
+        print("Vega + iteration error: ", error_extrap_vega_iter)
+
+        # Pickles
+        if flux_convert != flux_conversion_static[1]:
+            print("Pickles error: ", error_Pickles)
+        else:
+            print("Pickles error is comparison error")
+        # Calculated converison factors
+        print("Calc Conversion factors error: ", error_calc_conversion)
 
         # Plotting - Uses the ax plot object to plot the flux densities found from using different methods
         ax = SED_plot(spectrum, spectrum_df, pivotlist, flux_convert_name)
         ax.plot(pivotlist, flux_comparison, 'ro--', label='comparison')
         if flux_convert != flux_conversion_static[0]:
             ax.plot(pivotlist, flux_vega, 'go--', label='vega')
-        ax.plot(pivotlist, flux_extrap_vega, 'yo--', label='vega+interation')
+        ax.plot(pivotlist, flux_extrap_vega_iter,
+                'yo--', label='vega+interation')
         if flux_convert != flux_conversion_static[1]:
             ax.plot(pivotlist, flux_Pickles, 'mo--', label='pickles')
         ax.plot(pivotlist, flux_calc_conversion, 'ko--', label='calc convert')
@@ -271,8 +320,10 @@ def main():
     flux_conversion_static = [
         flux_conversion_dict['vega'], flux_conversion_dict['Pickles']]
     spectra = ['SN2017erp_m1_UVopt.dat']
+    vega_iteration = 3
     for spectrum in spectra:
-        SED(spectrum, filter_file_list, flux_convert, flux_conversion_static)
+        SED(spectrum, filter_file_list, flux_convert,
+            flux_conversion_static, vega_iteration)
 
 
 if __name__ == "__main__":
