@@ -81,6 +81,7 @@ df_bb_m2_w1 = df_bb['m2_mag']-df_bb['w1_mag']
 # w1 - v mag
 df_bb_w1_v = df_bb['w1_mag']-df_bb['v_mag']
 
+
 p1 = np.poly1d(np.polyfit(df_bb_w2_v.values, df_bb['w2_factor'].values, 2))
 t1=np.linspace(min(df_bb_w2_v.values), max(df_bb_w2_v.values), len(df_bb_w2_v.values))
 
@@ -92,10 +93,12 @@ plt.style.use('fivethirtyeight')
 
 fig,ax = plt.subplots()
 
-ax.plot(df_bb_w2_v.values, df_bb['w2_factor'].values, 'o', label='bb_values w2')
-ax.plot(df_bb_m2_v, df_bb['m2_factor'].values,'ro', label='bb_values m2')
+ax.plot(df_bb_w2_v.values, df_bb['w2_factor'].values, 'o', label='bb_values w2-v')
+ax.plot(df_bb_m2_v, df_bb['w2_factor'].values,'ro', label='bb_values m2-v')
+ax.plot(df_bb_m2_w1, df_bb['w2_factor'].values,'yo', label='bb_values m2-w1')
+ax.plot(df_bb_w1_v, df_bb['w2_factor'].values,'go', label='bb_values w1-v')
 ax.plot(t1, p1(t1), '-', label='poly curve w2')
-ax.plot(t2, p2(t2), '-', label='poly curve m2')
+# ax.plot(t2, p2(t2), '-', label='poly curve m2')
 ax.set_xlabel("w2-v")
 ax.set_ylabel("w2 factor")
 ax.set_title(
